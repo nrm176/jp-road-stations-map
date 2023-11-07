@@ -7,7 +7,6 @@ from sqlalchemy.orm import aliased
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-
 DATABASE_URL = "sqlite:///app/project.db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -57,6 +56,8 @@ class Prefecture(Base):
 origins = [
     "http://localhost:3001",  # React app address
     "http://127.0.0.1:3001",
+    "http://localhost:3000",  # React app address
+    "http://127.0.0.1:3000",
     "http://localhost:8000",
     # add more origins if needed
 ]
@@ -68,7 +69,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 def get_db():
@@ -158,7 +158,7 @@ def get_distances(skip: int = Query(0, alias="offset"), limit: int = Query(500),
         for record in records
     ]
 
-    #sleep for 2 seconds
+    # sleep for 2 seconds
     # time.sleep(2)
 
     return {

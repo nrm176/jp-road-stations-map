@@ -21,3 +21,6 @@
 ### How to run
 - ```docker build --tag jp-road_stations .```
 - ```docker run -d -p 3001:3001 -p 80:80 --name jp-road_stations jp-road_stations```
+
+### Docker Compose
+- ```docker-compose up -d```
