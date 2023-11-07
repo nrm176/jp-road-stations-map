@@ -1,6 +1,4 @@
 .env
 frontend/node_modules
 frontend/.idea
-backend/app/project.db
-
 .idea
