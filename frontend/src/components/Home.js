@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState} from 'react';
 import '../App.css';
 import Map from './Map';
 import Table from './Table';
@@ -8,7 +8,7 @@ import {baseUrl} from '../config';
 
 function Home() {
     const [maxDistance, setMaxDistance] = useState(1.0);
-    const [limit] = useState(100);
+    const [limit,] = useState(100);
     const [data, setData] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [selectedPref, setSelectedPref] = useState(0);
@@ -19,57 +19,51 @@ function Home() {
     const [mode, setMode] = useState('initial');
     const [loading, setLoading] = useState(false);
 
-    // Ref to track if the component is mounted to avoid updating state on unmounted component
-    const isMounted = useRef(true);
-
-    useEffect(() => {
-        // Set the flag to true when the component mounts
-        isMounted.current = true;
-
-        // Cleanup function to run when the component unmounts
-        return () => {
-            isMounted.current = false;
-        };
-    }, []);
 
     const fetchPrefectureData = async () => {
-        const response = await axios.get(`${baseUrl}/prefectures/`);
+        const response = await axios.get(`${baseUrl}/prefectures/`)
         return response.data;
-    };
+    }
 
     const fetchDistanceData = async (limit, maxDistance, selectedPref) => {
         const apiUrl = `${baseUrl}/distances/?offset=0&limit=${limit}&max_distance=${maxDistance}&pref_code=${selectedPref}`;
+        const response = await axios.get(apiUrl);
+        return response.data.records;
+    }
 
-        setLoading(true); // Moved setLoading here to ensure it's set before the request is made.
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
 
-        try {
-            const response = await axios.get(apiUrl);
-            if (isMounted.current) {
-                setData(response.data.records);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            if (isMounted.current) {
+            try {
+                const response = await fetchDistanceData(limit, maxDistance, selectedPref);
+                setData(response);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
                 setLoading(false);
             }
         }
-    };
+
+        fetchData();
+    }, [maxDistance, limit, selectedPref]); // Dependency array to re-run the effect when these values change
+
 
     useEffect(() => {
-        fetchDistanceData(limit, maxDistance, selectedPref);
-        // The cleanup function is not required here as fetchDistanceData already checks for the mounted state.
-    }, [maxDistance, limit, selectedPref]);
-
-    useEffect(() => {
-        if (prefectures.length === 0) {
-            fetchPrefectureData().then((data) => {
-                if (isMounted.current) {
+        async function fetchData() {
+            if (prefectures.length === 0) {
+                try {
+                    const data = await fetchPrefectureData();
                     setPrefectures(data);
                     localStorage.setItem('prefectures', JSON.stringify(data));
+                } catch (error) {
+                    // Handle the error, e.g., set an error state, log it, etc.
+                    console.error('Failed to fetch prefectures:', error);
                 }
-            });
+            }
         }
+
+        fetchData();
     }, [prefectures.length]);
 
 
@@ -80,6 +74,7 @@ function Home() {
     }
 
     const handleSelectItemOnTable = (item) => {
+        console.log(item)
         setSelectedItem(item);
         setMode('item');
     }
